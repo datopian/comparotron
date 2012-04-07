@@ -16,7 +16,7 @@ my.Application = Backbone.Router.extend({
 
   home: function() {
     this.switchView('home');
-    var url = 'http://thedatahub.org/api/data/eca3d7c2-f150-45e4-8749-0c4ba24505fe';
+    var url = 'http://thedatahub.org/api/data/4faaef85-3b22-4ebb-ad28-fcc6bd4f5f3d';
     var dataset = new recline.Model.Dataset({
         id: 'default',
         url: url
@@ -86,8 +86,8 @@ my.Results = Backbone.View.extend({
 
     var dataItems = this.model.currentDocuments.map(function(item) {
       return {
-        label: item.get('Region') + ' - ' + item.get('year')
-        , value: parseInt(item.get('longterm_unemployment'))
+        label: item.get('region') + ' - ' + item.get('year')
+        , value: parseInt(item.get('value'))
         , backboneObject: item
       };
     });
@@ -163,8 +163,8 @@ my.Selected = Backbone.View.extend({
 
     var dataItems = this.collection.map(function(item) {
       return {
-        label: item.get('Region') + ' - ' + item.get('year')
-        , value: parseInt(item.get('longterm_unemployment'))
+        label: item.get('region') + ' - ' + item.get('year')
+        , value: parseInt(item.get('value'))
         , backboneObject: item
       };
     });
