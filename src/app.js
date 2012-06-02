@@ -1,11 +1,31 @@
+var DEMODATA = null;
+
 jQuery(function () {
-  var app = new Comparotron.Application();
-  Backbone.history.start();
+  var url = 'data/demo.json';
+  $.ajax({
+    url: url,
+    success: function(data) {
+      DEMODATA = JSON.parse(data);
+      var app = new Comparotron.Application();
+      Backbone.history.start();
+    }
+  });
 });
 
 var Comparotron = Comparotron || {};
 
 (function($, my) {
+
+my.QueryResult = Backbone.Model.extend({
+});
+
+my.Record = Backbone.Model.extend({
+});
+
+my.RecordList = Backbone.Collection.extend({
+  model: my.Record
+});
+
 
 // ## The primary view for the entire application
 //
@@ -16,29 +36,40 @@ my.Application = Backbone.Router.extend({
 
   home: function() {
     this.switchView('home');
-    var url = 'http://thedatahub.org/api/data/4faaef85-3b22-4ebb-ad28-fcc6bd4f5f3d';
-    var dataset = new recline.Model.Dataset({
-        id: 'default',
-        url: url
-      },
-      'elasticsearch'
-    );
+    var url = 'http://thedatahub.org/api/data/4faaef85-3b22-4ebb-ad28-fcc6bd4f5f3d/_search';
+//     var url = 'http://localhost:9200/ckan-localhost/874e6e14-b392-48cb-9ec6-3941deeb2b98';
     var $search = $('.backbone-page.home form');
+    var queryResult = new my.QueryResult();
     var results = new my.Results({
-      model: dataset
+      model: queryResult
     });
-    var selected = new recline.Model.DocumentList();
+    var selected = new my.RecordList();
     var selectedView = new my.Selected({
       collection: selected
     });
     results.selected = selected;
-    var $results = $('.backbone-page.home ');
+    var $results = $('.backbone-page.home');
     $search.submit(function(e) {
       e.preventDefault();
       var q = $search.find('input[name="q"]').val();
-      dataset.query({
-        q: q,
+      var query = {
+        'query': {
+          'match_all': {}
+        },
         size: 10
+      };
+      var jqxhr = $.ajax({
+        url: url,
+        data: {source: JSON.stringify(query)}
+      });
+      jqxhr.done(function(data) {
+        var hits = _.map(data.hits.hits, function(item) {
+          return item._source;
+        });
+        queryResult.set({
+          total: data.hits.total,
+          hits: hits
+        });
       });
     });
     $('.backbone-page.home .2nd').append(results.el);
@@ -55,18 +86,20 @@ my.Application = Backbone.Router.extend({
 my.Results = Backbone.View.extend({
   template: ' \
     <div class="results span6"> \
-      <h2>Search Results ({{docCount}})</h2> \
+      <h2>Search Results (<span class="docCount">docCount</span>)</h2> \
       <div class="bubbles-viz"></div> \
     </div> \
   ',
   initialize: function() {
     this.el = $(this.el);
     _.bindAll(this, 'render');
-    this.model.bind('query:done', this.render);
+    this.model.bind('change', this.render);
   },
   render: function() {
-    var templated = $.mustache(this.template, this.model.toTemplateJSON());
-    this.el.html(templated);
+    var templated = $(this.template);
+    templated.find('.docCount').text(this.model.toJSON().total);
+    templated = $('<div />').append(templated);
+    this.el.html(templated.html());
     this.doViz();
   },
   doViz: function() {
@@ -84,10 +117,10 @@ my.Results = Backbone.View.extend({
       .attr("height", r)
       .attr("class", "bubble");
 
-    var dataItems = this.model.currentDocuments.map(function(item) {
+    var dataItems = this.model.get('hits').map(function(item) {
       return {
-        label: item.get('region') + ' - ' + item.get('year')
-        , value: parseInt(item.get('value'))
+        label: item.region + ' - ' + item.year
+        , value: parseInt(item.value)
         , backboneObject: item
       };
     });
@@ -142,8 +175,8 @@ my.Selected = Backbone.View.extend({
     alert('Not yet implemented :-)');
   },
   render: function() {
-    var templated = $.mustache(this.template, {});
-    this.el.html(templated);
+    var templated = $(this.template).clone();
+    this.el.html(templated.html());
     this.doViz();
   },
   doViz: function() {
