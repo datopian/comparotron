@@ -5,7 +5,8 @@ jQuery(function () {
   $.ajax({
     url: url,
     success: function(data) {
-      DEMODATA = JSON.parse(data);
+      // DEMODATA = JSON.parse(data);
+      DEMODATA = data;
       var app = new Comparotron.Application();
       Backbone.history.start();
     }
@@ -36,8 +37,9 @@ my.Application = Backbone.Router.extend({
 
   home: function() {
     this.switchView('home');
-    var url = 'http://thedatahub.org/api/data/4faaef85-3b22-4ebb-ad28-fcc6bd4f5f3d/_search';
-//     var url = 'http://localhost:9200/ckan-localhost/874e6e14-b392-48cb-9ec6-3941deeb2b98';
+    // var url = 'http://thedatahub.org/api/data/4faaef85-3b22-4ebb-ad28-fcc6bd4f5f3d/_search';
+    // var url = 'http://localhost:9200/ckan-localhost/874e6e14-b392-48cb-9ec6-3941deeb2b98';
+    var url = 'http://localhost:9200/comparotron/yourtopia/_search';
     var $search = $('.backbone-page.home form');
     var queryResult = new my.QueryResult();
     var results = new my.Results({

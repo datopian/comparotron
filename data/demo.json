@@ -1,0 +1,14 @@
+[
+  {
+    "id": 1,
+    "label": "UK GDP in 2012",
+    "value": 3500000000,
+    "currency": "GBP"
+  },
+  {
+    "id": 2,
+    "label": "UK overseas aid in 2012",
+    "value": 100000000,
+    "currency": "GBP"
+  }
+]
